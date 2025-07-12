@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Manager - Edit Task</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Project Manager</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="all-tasks.html">All Tasks</a></li>
+                <li><a href="task-tree.html">Task Tree</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="task-form">
+            <h2 id="form-title">Create New Task</h2>
+            <form id="task-form">
+                <input type="hidden" id="task-id">
+                
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="team">Team in charge:</label>
+                    <select id="team" required>
+                        <option value="">Select a team</option>
+                        <option value="Chassis">Chassis</option>
+                        <option value="Suspension">Suspension</option>
+                        <option value="Drivetrain">Drivetrain</option>
+                        <option value="Elec">Elec</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="prerequisites">Prerequisites:</label>
+                    <select id="prerequisites" multiple>
+                        <!-- Options will be populated by JS -->
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="expected-time">Expected time (days):</label>
+                    <input type="number" id="expected-time" min="0" step="0.5" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="working-location">Working location:</label>
+                    <select id="working-location" required>
+                        <option value="On site">On site</option>
+                        <option value="WFH">WFH</option>
+                        <option value="Any">Any</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="completion-percentage">Completion (%):</label>
+                    <input type="number" id="completion-percentage" min="0" max="100" value="0">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" id="save-btn">Save Task</button>
+                    <button type="button" id="cancel-btn">Cancel</button>
+                    <button type="button" id="delete-btn" class="danger">Delete Task</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/task-service.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

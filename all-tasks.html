@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Manager - All Tasks</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Project Manager</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="all-tasks.html" class="active">All Tasks</a></li>
+                <li><a href="task-tree.html">Task Tree</a></li>
+                <li><button id="new-task-btn">+ New Task</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="task-list">
+            <h2>All Tasks</h2>
+            <div class="filters">
+                <select id="team-filter">
+                    <option value="">All Teams</option>
+                    <option value="Chassis">Chassis</option>
+                    <option value="Suspension">Suspension</option>
+                    <option value="Drivetrain">Drivetrain</option>
+                    <option value="Elec">Elec</option>
+                </select>
+                <select id="location-filter">
+                    <option value="">All Locations</option>
+                    <option value="On site">On site</option>
+                    <option value="WFH">WFH</option>
+                    <option value="Any">Any</option>
+                </select>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Description</th>
+                        <th>Team</th>
+                        <th>Prerequisites</th>
+                        <th>Time</th>
+                        <th>% Complete</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tasks-table-body">
+                    <!-- Tasks will be inserted here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/task-service.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

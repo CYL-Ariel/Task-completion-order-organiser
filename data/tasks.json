@@ -1,0 +1,22 @@
+[
+  {
+    "id": "task-abc123",
+    "description": "Design chassis frame",
+    "team": "Chassis",
+    "prerequisites": [],
+    "expectedTime": 40,
+    "workingLocation": "On site",
+    "createdAt": "2023-05-15T10:00:00.000Z",
+    "updatedAt": "2023-05-15T10:00:00.000Z"
+  },
+  {
+    "id": "task-def456",
+    "description": "Develop suspension geometry",
+    "team": "Suspension",
+    "prerequisites": ["task-abc123"],
+    "expectedTime": 30,
+    "workingLocation": "Any",
+    "createdAt": "2023-05-16T11:30:00.000Z",
+    "updatedAt": "2023-05-16T11:30:00.000Z"
+  }
+]

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Manager - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Project Manager</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">Dashboard</a></li>
+                <li><a href="all-tasks.html">All Tasks</a></li>
+                <li><a href="task-tree.html">Task Tree</a></li>
+                <li><button id="new-task-btn">+ New Task</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="dashboard">
+            <div class="stats-card">
+                <h3>Total Tasks</h3>
+                <p id="total-tasks">0</p>
+            </div>
+            <div class="stats-card">
+                <h3>Tasks by Team</h3>
+                <div id="team-stats"></div>
+            </div>
+            <div class="stats-card">
+                <h3>Recent Tasks</h3>
+                <ul id="recent-tasks"></ul>
+            </div>
+            <div class="stats-card">
+                <h3>Tasks Overview</h3>
+                <p id="total-tasks">0</p>
+                <p class="stats-detail">
+                    <span id="completed-tasks">0</span> completed • 
+                    <span id="incomplete-tasks">0</span> remaining
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/task-service.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

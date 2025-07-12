@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Manager - Task Tree</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Project Manager</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="all-tasks.html">All Tasks</a></li>
+                <li><a href="task-tree.html" class="active">Task Tree</a></li>
+                <li><button id="new-task-btn">+ New Task</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="tree-view">
+            <h2>Task Dependency Tree</h2>
+            <div class="controls">
+                <select id="root-task-select">
+                    <option value="">Select a root task...</option>
+                </select>
+                <button id="show-full-tree">Show Full Tree</button>
+            </div>
+            <div id="tree-container">
+                <!-- Tree visualization will be inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/task-service.js"></script>
+    <script type="module" src="js/tree-view.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
