@@ -5,7 +5,7 @@
 import { 
     generateId,
     calculateDaysBetweenDates
- } from './utils.js';
+ } from '../utils.js';
 
 // File path for tasks data
 const TASKS_FILE = 'data/tasks.json';

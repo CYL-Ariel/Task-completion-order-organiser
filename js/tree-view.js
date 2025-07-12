@@ -2,7 +2,7 @@
  * Module for visualizing task trees
  */
 import * as d3 from 'https://cdn.jsdelivr.net/npm/d3@7/+esm';
-import taskService from './task-service.js';
+import taskService from './services/task-service.js';
 import { formatTime } from './utils.js';
 
 class TreeView {
