@@ -98,3 +98,43 @@
 .remove-person:hover {
     color: #e74c3c;
 }
+
+.prerequisites-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.prerequisite-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e0f7fa;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+}
+
+.prerequisite-tag button {
+    background: none;
+    border: none;
+    color: #666;
+    margin-left: 0.5rem;
+    padding: 0 0.2rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.prerequisite-tag button:hover {
+    color: #e74c3c;
+}
+
+.prerequisite-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.prerequisite-selector select {
+    flex-grow: 1;
+}

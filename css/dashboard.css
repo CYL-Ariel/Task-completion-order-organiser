@@ -40,3 +40,23 @@
     font-weight: bold;
     color: #e67e22;
 }
+
+/* Add to dashboard.css */
+.has-tooltip {
+    position: relative;
+}
+
+.has-tooltip:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    z-index: 10;
+}

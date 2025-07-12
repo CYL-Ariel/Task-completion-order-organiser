@@ -42,11 +42,17 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="prerequisites">Prerequisites:</label>
-                    <select id="prerequisites" multiple>
-                        <!-- Options will be populated by JS -->
-                    </select>
-                    <small>Hold Ctrl/Cmd to select multiple</small>
+                    <label>Prerequisites:</label>
+                    <div id="prerequisites-container" class="prerequisites-tags">
+                        <!-- Selected prerequisites will appear here as tags -->
+                    </div>
+                    <div class="prerequisite-selector">
+                        <select id="prerequisites-select">
+                            <option value="">Select a prerequisite...</option>
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                        <button type="button" id="add-prerequisite-btn">Add</button>
+                    </div>
                 </div>
                 
                 <div class="form-group">

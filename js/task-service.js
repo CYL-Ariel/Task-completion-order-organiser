@@ -193,70 +193,88 @@ class TaskService {
             .slice(0, limit);
     }
 
-    calculateProjectDuration() {
-        const tasks = this.getAllTasks();
-        const taskDurations = {};
-        let maxEndDate = new Date(); // Start with current date
-
-        // First pass: calculate durations for all tasks
-        tasks.forEach(task => {
-            let startDate;
-            let durationDays = task.expectedTime;
-            
-            if (task.actualStartDate) {
-                // For started tasks: remaining time
-                startDate = new Date(task.actualStartDate);
-                durationDays = task.expectedTime * (1 - (task.completionPercentage / 100));
-            }
-            else {
-                if (task.estimatedStartDate) {
-                    // For unstarted tasks with estimated date
-                    startDate = new Date(task.estimatedStartDate);
-                    let tmr = new Date();
-                    tmr.setDate(tmr.getDate() + 1); // Start tomorrow
-                    if (tmr > startDate) {
-                        startDate = tmr;
-                    }
-                } else {
-                    // For unstarted tasks without estimated date (start tomorrow)
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() + 1);
-                }
-            }
-
-            // Adjust for prerequisites
-            if (task.prerequisites && task.prerequisites.length > 0) {
-                const prereqEndDates = task.prerequisites.map(prereqId => {
-                    const prereq = this.getTaskById(prereqId);
-                    return prereq ? new Date(taskDurations[prereqId]?.endDate || new Date()) : new Date();
-                });
-                
-                const latestPrereqDate = new Date(Math.max(...prereqEndDates.map(date => date.getTime())));
-                if (latestPrereqDate > startDate) {
-                    startDate = latestPrereqDate;
-                }
-            }
-
-            const endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + durationDays);
-
-            taskDurations[task.id] = {
-                startDate,
-                endDate,
-                durationDays
-            };
-
-            if (endDate > maxEndDate) {
-                maxEndDate = endDate;
-            }
-        });
-
-        // Calculate days from today to the latest end date
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return Math.max(0, calculateDaysBetweenDates(today, maxEndDate));
+    // Helper method to get task end date considering completion
+    getTaskEndDate(task) {
+        if (!task) return new Date();
+        
+        let startDate;
+        let durationDays = task.expectedTime;
+        
+        if (task.actualStartDate) {
+            // For started tasks: remaining time
+            startDate = new Date(task.actualStartDate);
+            durationDays = task.expectedTime * (1 - (task.completionPercentage / 100));
+        } else if (task.estimatedStartDate) {
+            // For unstarted tasks with estimated date
+            startDate = new Date(task.estimatedStartDate);
+        } else {
+            // For unstarted tasks without estimated date (start tomorrow)
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() + 1);
+        }
+        
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + durationDays);
+        return endDate;
     }
 
+    // Recursive function to calculate critical path for a task
+    calculateTaskCriticalPath(taskId, visited = new Set()) {
+        if (visited.has(taskId)) return { duration: 0, path: [] };
+        visited.add(taskId);
+        
+        const task = this.getTaskById(taskId);
+        if (!task) return { duration: 0, path: [] };
+        
+        let maxDuration = 0;
+        let criticalPath = [];
+        
+        // Check all prerequisites
+        if (task.prerequisites && task.prerequisites.length > 0) {
+            for (const prereqId of task.prerequisites) {
+                const prereqResult = this.calculateTaskCriticalPath(prereqId, new Set(visited));
+                if (prereqResult.duration > maxDuration) {
+                    maxDuration = prereqResult.duration;
+                    criticalPath = [...prereqResult.path];
+                }
+            }
+        }
+        
+        // Add current task's duration
+        const taskEndDate = this.getTaskEndDate(task);
+        const taskDuration = calculateDaysBetweenDates(new Date(), taskEndDate);
+        
+        return {
+            duration: maxDuration + taskDuration,
+            path: [...criticalPath, task]
+        };
+    }
+
+    // Main method to calculate project duration
+    calculateProjectDuration() {
+        const tasks = this.getAllTasks();
+        let maxDuration = 0;
+        let criticalPath = [];
+        
+        // Find all end tasks (tasks that no other tasks depend on)
+        const endTasks = tasks.filter(task => {
+            return !tasks.some(t => t.prerequisites && t.prerequisites.includes(task.id));
+        });
+        
+        // Calculate critical path for each end task
+        endTasks.forEach(task => {
+            const result = this.calculateTaskCriticalPath(task.id);
+            if (result.duration > maxDuration) {
+                maxDuration = result.duration;
+                criticalPath = result.path;
+            }
+        });
+        
+        return {
+            days: maxDuration,
+            criticalPath: criticalPath.map(t => t.id)
+        };
+    }
 }
 
 // Create a singleton instance

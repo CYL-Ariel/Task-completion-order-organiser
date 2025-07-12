@@ -94,7 +94,12 @@ function initDashboardPage() {
 
     // Add project duration calculation
     const projectDuration = taskService.calculateProjectDuration();
-    document.getElementById('project-duration').textContent = projectDuration;
+    const durationElement = document.getElementById('project-duration');
+    durationElement.textContent = projectDuration.days;
+    
+    // Add tooltip with critical path
+    durationElement.title = `Critical Path: ${projectDuration.criticalPath.join(' → ')}`;
+    durationElement.style.cursor = 'help';
 }
 
 // Initialize the all tasks page
@@ -237,10 +242,79 @@ function initEditTaskPage() {
     } else {
         deleteBtn.style.display = 'none';
     }
-    
-    // Populate prerequisites dropdown
-    const prerequisitesSelect = document.getElementById('prerequisites');
-    const allTasks = taskService.getAllTasks();
+     // Prerequisite Management
+    const prerequisitesContainer = document.getElementById('prerequisites-container');
+    const prerequisitesSelect = document.getElementById('prerequisites-select');
+    const addPrerequisiteBtn = document.getElementById('add-prerequisite-btn');
+
+    // Function to render selected prerequisites
+    function renderPrerequisites(selectedPrerequisites) {
+        prerequisitesContainer.innerHTML = '';
+        
+        selectedPrerequisites.forEach(prereqId => {
+            const prereqTask = taskService.getTaskById(prereqId);
+            if (!prereqTask) return;
+            
+            const tag = document.createElement('div');
+            tag.className = 'prerequisite-tag';
+            tag.innerHTML = `
+                ${prereqTask.description.substring(0, 20)}${prereqTask.description.length > 20 ? '...' : ''}
+                <button type="button" class="remove-prerequisite" data-id="${prereqId}">&times;</button>
+            `;
+            prerequisitesContainer.appendChild(tag);
+        });
+
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.remove-prerequisite').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const prereqIdToRemove = e.target.dataset.id;
+                const updatedPrerequisites = Array.from(prerequisitesContainer.querySelectorAll('.prerequisite-tag'))
+                    .map(tag => tag.querySelector('button').dataset.id)
+                    .filter(id => id !== prereqIdToRemove);
+                renderPrerequisites(updatedPrerequisites);
+                updatePrerequisiteOptions();
+            });
+        });
+    }
+    // Function to update available prerequisite options
+    function updatePrerequisiteOptions() {
+        const currentPrerequisites = Array.from(prerequisitesContainer.querySelectorAll('.prerequisite-tag'))
+            .map(tag => tag.querySelector('button').dataset.id);
+        
+        // Clear and repopulate select
+        prerequisitesSelect.innerHTML = '<option value="">Select a prerequisite...</option>';
+        
+
+        taskService.getAllTasks().forEach(t => {
+            if (t.id !== taskId && !currentPrerequisites.includes(t.id)) {
+                const option = document.createElement('option');
+                option.value = t.id;
+                option.textContent = `${t.id.substring(5, 9)}: ${t.description.substring(0, 30)}...`;
+                prerequisitesSelect.appendChild(option);
+            }
+        });
+    }
+
+    // Add prerequisite button handler
+    addPrerequisiteBtn.addEventListener('click', () => {
+        const selectedId = prerequisitesSelect.value;
+        if (selectedId) {
+            const currentPrerequisites = Array.from(prerequisitesContainer.querySelectorAll('.prerequisite-tag'))
+                .map(tag => tag.querySelector('button').dataset.id);
+            
+            if (!currentPrerequisites.includes(selectedId)) {
+                renderPrerequisites([...currentPrerequisites, selectedId]);
+                updatePrerequisiteOptions();
+                prerequisitesSelect.value = '';
+            }
+        }
+    });
+
+    // Initialize with existing prerequisites
+    if (task && task.prerequisites) {
+        renderPrerequisites(task.prerequisites);
+    }
+    updatePrerequisiteOptions();
 
     const peopleContainer = document.getElementById('people-involved-container');
     const newPersonInput = document.getElementById('new-person-input');
@@ -305,6 +379,8 @@ function initEditTaskPage() {
         document.getElementById('actual-start-date').value = task.actualStartDate.split('T')[0];
     }
     
+
+    const allTasks = taskService.getAllTasks();
     allTasks.forEach(task => {
         if (task.id !== taskId) { // Don't allow self as prerequisite
             const option = document.createElement('option');
@@ -356,8 +432,8 @@ function initEditTaskPage() {
             expectedTime: parseFloat(document.getElementById('expected-time').value),
             completionPercentage: parseInt(document.getElementById('completion-percentage').value) || 0,
             workingLocation: document.getElementById('working-location').value,
-            prerequisites: Array.from(document.getElementById('prerequisites').selectedOptions)
-                .map(option => option.value),
+            prerequisites: Array.from(prerequisitesContainer.querySelectorAll('.prerequisite-tag'))
+                .map(tag => tag.querySelector('button').dataset.id),
             estimatedStartDate: document.getElementById('estimated-start-date').value || null,
             actualStartDate: document.getElementById('actual-start-date').value || null,
             peopleInvolved: Array.from(peopleContainer.querySelectorAll('.person-tag'))
