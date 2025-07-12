@@ -1,0 +1,47 @@
+/* Tree View Styles */
+.tree-view {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+#tree-container {
+    min-height: 500px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 1rem;
+    overflow: auto;
+}
+
+/* Tree visualization styles */
+.node {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.node circle {
+    fill: #3498db;
+    stroke: #2980b9;
+    stroke-width: 2px;
+}
+
+.node text {
+    font: 12px sans-serif;
+}
+
+.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 2px;
+}
+
+.node:hover circle {
+    fill: #2980b9;
+}
