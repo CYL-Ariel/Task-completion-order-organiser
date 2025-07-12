@@ -34,3 +34,9 @@
 .team-stat {
     margin-bottom: 0.5rem;
 }
+
+#project-duration {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e67e22;
+}

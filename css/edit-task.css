@@ -43,3 +43,58 @@
     gap: 1rem;
     margin-top: 2rem;
 }
+
+.add-person-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+#new-person-input {
+    flex-grow: 1;
+}
+
+.person-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e0f7fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.person-tag button {
+    background: none;
+    border: none;
+    color: #666;
+    margin-left: 0.25rem;
+    padding: 0;
+    cursor: pointer;
+}
+
+.person-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e0f7fa;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.remove-person {
+    background: none;
+    border: none;
+    color: #666;
+    margin-left: 0.5rem;
+    padding: 0 0.2rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.remove-person:hover {
+    color: #e74c3c;
+}

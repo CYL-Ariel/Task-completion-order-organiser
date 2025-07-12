@@ -2,7 +2,10 @@
  * Service for handling task data operations
  */
 
-import { generateId } from './utils.js';
+import { 
+    generateId,
+    calculateDaysBetweenDates
+ } from './utils.js';
 
 // File path for tasks data
 const TASKS_FILE = 'data/tasks.json';
@@ -28,20 +31,20 @@ class TaskService {
     loadTasks() {
         try {
             let tasks = JSON.parse(localStorage.getItem(TASKS_FILE)) || [];
-            
+            console.log('Loaded tasks:', tasks);
             // Initialize with sample data if empty
             if (tasks.length === 0) {
                 tasks = [
-                    {
-                        id: this.generateId(),
-                        description: "Design chassis frame",
-                        team: "Chassis",
-                        prerequisites: [],
-                        expectedTime: 40,
-                        workingLocation: "On site",
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    },
+                    // {
+                    //     id: this.generateId(),
+                    //     description: "Design chassis frame",
+                    //     team: "Chassis",
+                    //     prerequisites: [],
+                    //     expectedTime: 40,
+                    //     workingLocation: "On site",
+                    //     createdAt: new Date().toISOString(),
+                    //     updatedAt: new Date().toISOString()
+                    // },
                     {
                         id: this.generateId(),
                         description: "Develop suspension geometry",
@@ -85,13 +88,16 @@ class TaskService {
     // Create a new task
     createTask(taskData) {
         const newTask = {
-            id: generateId(),
-            ...taskData,
-            expectedTime: taskData.expectedTime, // now in days
-            completionPercentage: taskData.completionPercentage || 0, // new field
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
+        id: generateId(),
+        ...taskData,
+        expectedTime: taskData.expectedTime,
+        estimatedStartDate: taskData.estimatedStartDate || null,
+        actualStartDate: taskData.actualStartDate || null,
+        peopleInvolved: taskData.peopleInvolved || [],
+        completionPercentage: taskData.completionPercentage || 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
         
         this.tasks.push(newTask);
         this.saveTasks();
@@ -186,6 +192,71 @@ class TaskService {
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, limit);
     }
+
+    calculateProjectDuration() {
+        const tasks = this.getAllTasks();
+        const taskDurations = {};
+        let maxEndDate = new Date(); // Start with current date
+
+        // First pass: calculate durations for all tasks
+        tasks.forEach(task => {
+            let startDate;
+            let durationDays = task.expectedTime;
+            
+            if (task.actualStartDate) {
+                // For started tasks: remaining time
+                startDate = new Date(task.actualStartDate);
+                durationDays = task.expectedTime * (1 - (task.completionPercentage / 100));
+            }
+            else {
+                if (task.estimatedStartDate) {
+                    // For unstarted tasks with estimated date
+                    startDate = new Date(task.estimatedStartDate);
+                    let tmr = new Date();
+                    tmr.setDate(tmr.getDate() + 1); // Start tomorrow
+                    if (tmr > startDate) {
+                        startDate = tmr;
+                    }
+                } else {
+                    // For unstarted tasks without estimated date (start tomorrow)
+                    startDate = new Date();
+                    startDate.setDate(startDate.getDate() + 1);
+                }
+            }
+
+            // Adjust for prerequisites
+            if (task.prerequisites && task.prerequisites.length > 0) {
+                const prereqEndDates = task.prerequisites.map(prereqId => {
+                    const prereq = this.getTaskById(prereqId);
+                    return prereq ? new Date(taskDurations[prereqId]?.endDate || new Date()) : new Date();
+                });
+                
+                const latestPrereqDate = new Date(Math.max(...prereqEndDates.map(date => date.getTime())));
+                if (latestPrereqDate > startDate) {
+                    startDate = latestPrereqDate;
+                }
+            }
+
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + durationDays);
+
+            taskDurations[task.id] = {
+                startDate,
+                endDate,
+                durationDays
+            };
+
+            if (endDate > maxEndDate) {
+                maxEndDate = endDate;
+            }
+        });
+
+        // Calculate days from today to the latest end date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return Math.max(0, calculateDaysBetweenDates(today, maxEndDate));
+    }
+
 }
 
 // Create a singleton instance

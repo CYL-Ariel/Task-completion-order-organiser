@@ -69,6 +69,20 @@ async function showConfirmation(message) {
     });
 }
 
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function calculateDaysBetweenDates(startDate, endDate) {
+    const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+    return Math.round(Math.abs((new Date(endDate) - new Date(startDate)) / oneDay));
+}
+
 // Export utility functions
 export {
     generateId,
@@ -78,5 +92,7 @@ export {
     navigateToViewTask,
     getTaskIdFromUrl,
     isViewMode,
-    showConfirmation
+    showConfirmation,
+    escapeHtml,
+    calculateDaysBetweenDates
 };

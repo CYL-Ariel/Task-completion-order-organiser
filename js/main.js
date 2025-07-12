@@ -8,7 +8,8 @@ import {
     getTaskIdFromUrl, 
     isViewMode, 
     formatTime,
-    showConfirmation
+    showConfirmation,
+    escapeHtml
 } from './utils.js';
 
 // Initialize the app when DOM is loaded
@@ -72,6 +73,28 @@ function initDashboardPage() {
         `;
         teamStatsContainer.appendChild(statElement);
     });
+
+    const statusStatsContainer = document.getElementById('status-stats');
+    
+    const statusCounts = {
+        'Not Started': tasks.filter(t => !t.actualStartDate).length,
+        'Started': tasks.filter(t => t.actualStartDate && t.completionPercentage < 100).length,
+        'Completed': tasks.filter(t => t.completionPercentage >= 100).length
+    };
+    
+    statusStatsContainer.innerHTML = '';
+    Object.entries(statusCounts).forEach(([status, count]) => {
+        const statElement = document.createElement('div');
+        statElement.className = 'status-stat';
+        statElement.innerHTML = `
+            <strong>${status}:</strong> ${count} tasks
+        `;
+        statusStatsContainer.appendChild(statElement);
+    });
+
+    // Add project duration calculation
+    const projectDuration = taskService.calculateProjectDuration();
+    document.getElementById('project-duration').textContent = projectDuration;
 }
 
 // Initialize the all tasks page
@@ -84,6 +107,11 @@ function initAllTasksPage() {
         
         tasks.forEach(task => {
             const row = document.createElement('tr');
+
+            // Determine status
+            let status = 'Not Started';
+            if (task.actualStartDate) status = 'Started';
+            if (task.completionPercentage >= 100) status = 'Completed';
             
             // Get prerequisite descriptions
             const prereqs = task.prerequisites?.map(prereqId => {
@@ -100,6 +128,9 @@ function initAllTasksPage() {
                 <td>${task.team}</td>
                 <td>${prereqs.join(', ') || 'None'}</td>
                 <td>${formatTime(task.expectedTime)}</td>
+                <td>${task.estimatedStartDate ? new Date(task.estimatedStartDate).toLocaleDateString() : '-'}</td>
+                <td>${status}</td>
+                <td>${task.peopleInvolved?.join(', ') || '-'}</td>
                 <td class="${completionClass}">
                     <div class="progress-cell">
                         <span>${task.completionPercentage}%</span>
@@ -174,6 +205,19 @@ function initEditTaskPage() {
     const taskForm = document.getElementById('task-form');
     const taskId = getTaskIdFromUrl();
     const isView = isViewMode();
+
+    // Initialize task as null for new tasks
+    let task = null;
+    
+    // Load task data if editing
+    if (taskId) {
+        task = taskService.getTaskById(taskId);
+        if (!task) {
+            alert('Task not found!');
+            window.location.href = 'index.html';
+            return; // Exit early if task not found
+        }
+    }
     
     // Set up form title
     const formTitle = document.getElementById('form-title');
@@ -197,6 +241,69 @@ function initEditTaskPage() {
     // Populate prerequisites dropdown
     const prerequisitesSelect = document.getElementById('prerequisites');
     const allTasks = taskService.getAllTasks();
+
+    const peopleContainer = document.getElementById('people-involved-container');
+    const newPersonInput = document.getElementById('new-person-input');
+    const addPersonBtn = document.getElementById('add-person-btn');
+    
+    function renderPeopleInvolved(people) {
+        const peopleContainer = document.getElementById('people-involved-container');
+        peopleContainer.innerHTML = '';
+        
+        people.forEach(person => {
+            const tag = document.createElement('div');
+            tag.className = 'person-tag';
+            tag.innerHTML = `
+                ${person}
+                <button type="button" class="remove-person" data-person="${escapeHtml(person)}">&times;</button>
+            `;
+            peopleContainer.appendChild(tag);
+        });
+
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.remove-person').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const personToRemove = e.target.getAttribute('data-person');
+                const updatedPeople = Array.from(peopleContainer.querySelectorAll('.person-tag'))
+                    .map(tag => tag.textContent.trim().replace('×', '').trim())
+                    .filter(person => person !== personToRemove);
+                renderPeopleInvolved(updatedPeople);
+            });
+        });
+    }
+    
+    addPersonBtn.addEventListener('click', () => {
+        const newPerson = newPersonInput.value.trim();
+        if (newPerson) {
+            const currentPeople = Array.from(peopleContainer.querySelectorAll('.person-tag'))
+                .map(tag => tag.textContent.trim().replace('×', '').trim());
+            
+            if (!currentPeople.includes(newPerson)) {
+                renderPeopleInvolved([...currentPeople, newPerson]);
+                newPersonInput.value = '';
+            }
+        }
+    });
+    
+    newPersonInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addPersonBtn.click();
+        }
+    });
+    
+    // Load existing people if editing
+    if (taskId && task.peopleInvolved) {
+        renderPeopleInvolved(task.peopleInvolved);
+    }
+    
+    // Load dates if they exist
+    if (taskId && task.estimatedStartDate) {
+        document.getElementById('estimated-start-date').value = task.estimatedStartDate.split('T')[0];
+    }
+    if (taskId && task.actualStartDate) {
+        document.getElementById('actual-start-date').value = task.actualStartDate.split('T')[0];
+    }
     
     allTasks.forEach(task => {
         if (task.id !== taskId) { // Don't allow self as prerequisite
@@ -250,7 +357,12 @@ function initEditTaskPage() {
             completionPercentage: parseInt(document.getElementById('completion-percentage').value) || 0,
             workingLocation: document.getElementById('working-location').value,
             prerequisites: Array.from(document.getElementById('prerequisites').selectedOptions)
-                .map(option => option.value)
+                .map(option => option.value),
+            estimatedStartDate: document.getElementById('estimated-start-date').value || null,
+            actualStartDate: document.getElementById('actual-start-date').value || null,
+            peopleInvolved: Array.from(peopleContainer.querySelectorAll('.person-tag'))
+                .map(tag => tag.textContent.trim().replace('×', '').trim())
+                .filter(person => person !== '') // Ensure no empty names
         };
         
         if (taskId) {
